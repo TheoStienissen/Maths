@@ -473,3 +473,35 @@ end prime_test;
 
 */
  
+
+https://www.youtube.com/@MichaelPennMath
+
+
+
+
+Wilson extended
+m element of N
+phi (m) = k
+r1, r2, .. rk :   gcf (ri, m) = 1
+Note phi (m - 1) = -1 mod (m). because rk and m only differ 1 they are relatively prime.
+There exists an inverse s.t. x.ri = 1 mod (m)
+so r1 * r2 * .. * r(k-1) = -1 mod (m)
+
+m = 10 gives the set (1,3,7,9) 1.3.7 = 1 mod (10)
+m = 12 gives the set (1,5,7,11) 5*5= 1 mod (12) en 7*7 = 1 mod (12)
+m = 14 (1,3,5,9,11,13) 3*5 = 1 9*11 = 1
+m = 15 (1,2,4,7,8,11,13,14)
+2*8=4*4=7*13=11*11=1
+ Notes to Wilson extended:
+ 
+ if n ** 2 = 1 mod (m)
+ then 
+    (m-n) ** 2 = m ** 2 - 2mn + k ** 2 = 1 mod (m)
+end If
+
+--Products of squares opposites, conjugates
+For every n E {1, .. , m-1 }
+n * (m-n) = mn - n ** 2 = - n ** 2 mod (m)
+Example
+4 ** 2 = 1 mod (15) ; 11 * 2 = 1 mod 15
+4 * 11 = -1 mod (15
