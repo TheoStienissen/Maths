@@ -1,0 +1,130 @@
+Doel: Voorbereiding cryptografie RSA
+Voor hele grote priemgetallen is het heel lastig om een product te herschrijven als priemfactoren.
+11 * 17 is nog wel te doen, maar voor priemgetallen met honderden cyfers is dit een stuk lastiger.
+Hoewel....
+
+
+Stap 0:
+  Er zijn 4 wiskunde axioma's (eigenschappen dit niet te verder bewijzen zijn). Wel aannemelijk te maken.
+  Commutatief, associatief en distributief.
+  Verder zijn er 2 eigenschappen voor reele getallen (neutraal element en inverse).
+
+Stap 1: Euclides (330 - 200 BC). ax + by = d. Manier om d te berekenen EN manier om x,y te berekenen.
+   gcf: is de kleinste waarde van ax + by 
+   Waarden voor x en y zijn niet uniek!
+
+Stap 2: Modulo rekening. Karl Friedrich Gauss 1700 - 1800
+   Cayley tabellen. U(10) = (1, 3, 7, 9} en U(12) = { 1, 5, 7, 11} Toon link met totient functie
+
+2. p / ab <=> p / a ! p / b. Unieke pfo voor alle getallen.
+   Gevolg is de unieke priemfactor ontbinding.
+
+3. ax = 1 mod (p) als gcf (a,p) = 1
+   Dit is een direkt gevolg van het algorithme van Euclides.
+
+4. Spelen met module berekeningen. Pythagoras 500 BC:
+   Veelvoud van een triplet is opnieuw een triplet. Primitief tripet: Getallen hebben gcf = 1
+   o + o = e onmogelijk         mod (2)
+   a of b 3-voud.               mod (3)
+   a of b of c is deelbaar door 5. mod (5)
+   Er zijn oneindig veel primitieve triplets.
+   
+5. Som alternerende cijfers deelbaar door 11, dan getal deelbaar door 11, want 10 = -1 mod (11)
+   7-Test: g = 10 * x + y: 7 / g <=> 7 / x - 2y
+   
+ToDo:
+   Deelbaarheid door 9 (mod (9)) en deelbaarheid door 3 (mod (3)).
+   
+6.  Modulo function is distributief
+    (a + b) mod (p) = a mod (p) + b mod (p)
+     a * b mod (p) = a mod (p) * b mod (p)
+	
+7. Als g niet priem en a * b = 0, dan niet: a = 0 of b = 0 !!
+   3 * 4 = 6 * 2 = 0 mod (12)
+
+Stap 3: Kleine stelling van Fermat. Pierre de Fermat. Franse advocaat en rechter: 1540.
+  a ** (p-1) = 1  mod (p)
+  a ** p = a  mod (p)
+
+ToDo: 2730 / n ** 13 - n
+
+Stap 4:  Leonard Euler. Zwitserland 1600 - 1700. St. Petersburg. Van 6 kinderen zijn er 5 gestorven.
+  Totient funktie phi (N) geeft aantal positieve getallen 1 <= getal <= N, dat enkel 1 gemeen heeft als delers.
+  We weten, dat als p = priem, dan phi(p) = p - 1
+  Als gcf (p,q) = 1, dan phi (p*q) = phi (p) * phi (q) (distributief)
+  Als p,q beide verschillende priemgetallen, dan: phi (p.q) = (p-1)*(q-1)
+
+Stap 5:  Leonard Leuler. Uitbreiding van stelling van Fermat
+  We hadden de kleine stelling van Fermat: a ** (p-1) = 1 mod (p)
+  Euler: als gcf (a, m) = 1 dan a ** phi (m) = 1 mod (m)
+
+Stap 6: Rivest, Shamir, Adleman. Amerikaanse leger. Rond 1970.
+  Niets nieuws. Enkel toepassing van Euclides, Fermat en Euler.
+  Kies 2 priemgetallen. Bv: 2,7. N = p.q = 14
+  phi (14) = 6
+  Bericht B = 2
+
+Kies e zodat e coprime is met N and phi (N). Voor grote getallen zijn er veel mogelijkheden.
+Hier: e = 5     1 <= e <= phi (N)
+
+
+Encryptiesleutel: lock e = 5,14
+2 ** 5 = 4 mod (14)  select mod (power (2,5), 14) from dual;
+Verstuurd bericht is: 4
+
+
+We weten dat er een inverse is modulo phi (N). Euclides AX + BY = 1
+d * e = 1 mod (phi(N))
+d * 5 = 1 mod (6)
+5 * 5 = 1. Je kunt hier natuurlijk 6 bij op tellen: 5 * 11 = 1 mod (6)
+5 * 11 mod (6) = 1
+m ** (phi (N) + 1) = m
+
+
+Decryptie: d = 11,14
+4 ** 11 = 2 mod (14) select mod(power (4,11), 14) from dual;
+
+========================================================== Demo
+
+2 Primes p: 5000011 and q: 5000167
+phi : 25000880001660  Totient (p -1) * (q - 1)
+N   : 25000890001837  p * q
+e   : 103   -- select maths.inverse (103, 25000880001660) from dual;
+d   : 16019981360287
+
+
+-- Sender
+select rsa_support.text_to_number ('Hallo') nr from dual;
+select maths.powermod (4166777780,103,25000890001837) from dual;
+
+-- Receiver
+select maths.powermod (1972649134750,16019981360287,25000890001837) from dual;
+select rsa_support.number_to_text (4166777780) from dual;
+
+-- Receiver
+select rsa_support.text_to_number ('Dolly') nr from dual;
+select maths.powermod (3780777790,103,25000890001837) from dual;
+
+-- Sender
+select maths.powermod (1114055891760,16019981360287,25000890001837) from dual;
+select rsa_support.number_to_text (3780777790) from dual;
+
+e = 10037
+select maths.inverse (10037, 25000880001660) from dual;
+d = 12454358873
+
+
+============================== Hoe verder? Wat nu?
+
+Methode is gebaseerd op het feit, dat het lastig is om uit een product de oorspronkelijke priemgetallen te berekenen.
+Twee priemgetallen en de totient daarvan worden bewaard in een safe.
+
+RSA is nu al in (te) veel gevallen met een goede computer binnen 2 dagen te breken. Met quantum computers en het "shor" algorithme wordt dit nog eenvoudiger.
+Dit kan (gedeeltelijk) worden gecompenseerd door gebruik te maken van langere priemgetallen.
+Meerdere betere methodes inmiddels beschikbaar. Elliptische curve cryptografie.
+
+Q: Hoe weet je of een heel lang getal een priemgetal is?
+A: Rabin / Miller priemtest
+
+Q: Kan de computer overweg met zulke lange getallen?
+A: Ja, door gebruik te maken van een aantal trucjes kan dit zelfs in een fractie van een seconde.
