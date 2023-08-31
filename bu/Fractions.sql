@@ -2,7 +2,7 @@
 
 Name        : Fractions.sql
 
-Last update : April 2018
+Last update : April 2018 / August 2023
 
 Author      : Theo stienissen
 
