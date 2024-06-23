@@ -66,7 +66,7 @@ prompt
 create or replace package maths
 as
 
-type prime_ty is table of integer (20) index by binary_integer;
+type prime_ty is table of pls_integer index by pls_integer;
 g_prime_tab   prime_ty;
 
 -- RSA
@@ -106,15 +106,15 @@ function  is_prime (p_integer in integer) return boolean;
 
 function  is_prime_n (p_integer in integer) return integer;
 
-function  get_prime (p_integer in integer) return integer;
+function  prime_by_index (p_integer in integer) return integer;
 
-function  get_smallest_divisor (p_integer in integer) return integer;
+function  smallest_divisor (p_integer in integer) return integer;
 
 function  pfo (p_integer in integer) return varchar2;
 
-procedure get_divisors (p_integer in integer);
+procedure number_of_divisors (p_integer in integer);
 
-function  get_divisors (p_integer in integer) return integer_tab pipelined;
+function  number_of_divisors (p_integer in integer) return integer_tab pipelined;
 
 function  get_pfo_rows (p_integer in integer) return pfo_tab pipelined;
 
@@ -532,7 +532,10 @@ end is_prime;
 function is_prime_n (p_integer in integer) return integer
 is
 begin
-  if is_prime (p_integer) then return 1; else return 0; end if;
+  if is_prime (p_integer)
+  then return 1;
+  else return 0;
+  end if;
 
 exception when others then
   util.show_error ('Error in function is_prime_n for: ' || p_integer || '.', sqlerrm);
@@ -544,19 +547,19 @@ end is_prime_n;
 --
 -- Function returns the n-th prime
 --
-function get_prime (p_integer in integer) return integer
+function prime_by_index (p_integer in integer) return integer
 is
 begin
   check_init;
   return maths.g_prime_tab (p_integer);
 
 exception when others then
-  util.show_error ('Error in function get_prime for: ' || p_integer || '.', sqlerrm);
-end get_prime;
+  util.show_error ('Error in function prime_by_index for: ' || p_integer || '.', sqlerrm);
+end prime_by_index;
 
 /*************************************************************************************************************************************************/
 
-function get_smallest_divisor (p_integer in integer) return integer
+function smallest_divisor (p_integer in integer) return integer
 is
 b_divisor boolean;
 l_divisor integer := p_integer;
@@ -573,9 +576,9 @@ begin
   return l_divisor;
 
 exception when others then
-  util.show_error ('Error in function get_smallest_divisor for: ' || p_integer || '.', sqlerrm);
+  util.show_error ('Error in function smallest_divisor for: ' || p_integer || '.', sqlerrm);
   return null;
-end get_smallest_divisor;
+end smallest_divisor;
 
 /*************************************************************************************************************************************************/
 
@@ -586,7 +589,7 @@ function pfo (p_integer in integer) return varchar2
 is
 l_number  integer;
 begin
-  l_number := get_smallest_divisor (p_integer);
+  l_number := smallest_divisor (p_integer);
   if l_number = p_integer
   then return to_char (l_number);
   else return to_char (l_number) || ' *  ' || pfo (p_integer / l_number);
@@ -602,7 +605,7 @@ end pfo;
 --
 -- Outputs the number of divisors
 --
-procedure get_divisors (p_integer in integer)
+procedure number_of_divisors (p_integer in integer)
 is
 l_sqrt        integer (19);
 l_sqr         integer (38);
@@ -627,15 +630,15 @@ begin
   dbms_output.put_line ('Number of divisors for: ' || to_char (p_integer) || ' is: ' || to_char (l_no_divisors));
 
 exception when others then
-  util.show_error ('Error in procedure get_divisors for: ' || p_integer ||'.', sqlerrm);
-end get_divisors;
+  util.show_error ('Error in procedure number_of_divisors for: ' || p_integer ||'.', sqlerrm);
+end number_of_divisors;
 
 /*************************************************************************************************************************************************/
 
 --
 -- Pipelined function to return all divisors
 --
-function get_divisors (p_integer in integer) return integer_tab pipelined
+function number_of_divisors (p_integer in integer) return integer_tab pipelined
 is
 l_sqrt        integer (19);
 l_sqr         integer (38);
@@ -661,8 +664,8 @@ begin
   end loop;
 
 exception when others then
-  util.show_error ('Error in function get_divisors for: ' || p_integer || '.', sqlerrm);
-end get_divisors;
+  util.show_error ('Error in function number_of_divisors for: ' || p_integer || '.', sqlerrm);
+end number_of_divisors;
 
 /*************************************************************************************************************************************************/
 
@@ -911,7 +914,7 @@ end pi;
 function k# (p_integer in integer) return integer
 is
 l_product integer := 1;
-l_count   integer := 0;
+l_count   integer := 1;
 begin
   check_init;
 
@@ -1519,15 +1522,15 @@ set serveroutput on size unlimited
 select maths.gcd(11181, 6327) gcd,  maths.lcm(11181, 6327) lcm from dual;
 
 select maths.is_prime_n (53) from dual;
-select maths.get_smallest_divisor(6327) from dual;
+select maths.smallest_divisor(6327) from dual;
 
 select maths.pfo(11181) from dual;
 
-exec maths.get_divisors(11181)
-exec maths.get_divisors(96)
-exec maths.get_divisors(6327)
+exec maths.number_of_divisors(11181)
+exec maths.number_of_divisors(96)
+exec maths.number_of_divisors(6327)
 
-select nr from table(maths.get_divisors(11181)) order by nr;
+select nr from table(maths.number_of_divisors(11181)) order by nr;
 
 select * from table (maths.get_pfo_rows(96));
 

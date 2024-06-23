@@ -22,7 +22,7 @@ procedure add_primes (io_array in out t_field_table, p_totient in integer);
 
 procedure traverse (in_array in t_field_table, io_result_array in out t_field_table, in_depth in integer);
 
-procedure validate_totient (in_array in t_field_table, io_result_array in out t_field_table, in_product in integer, in_previous in integer, in_phi in integer);
+procedure validate_totient (in_depth in integer, in_array in t_field_table, io_result_array in out t_field_table, in_product in integer, in_phi in integer);
 
 function inverse_totient (in_phi in integer) return integer_tab pipelined;
 end euler_pkg;
@@ -276,7 +276,7 @@ end total_mod;
 procedure add_primes (io_array in out t_field_table, p_totient in integer)
 is
 begin
-  for j in (select nr from table (maths.get_divisors (p_totient)) where maths.is_prime_n (nr + 1) = 1)
+  for j in (select nr from table (maths.number_of_divisors (p_totient)) where maths.is_prime_n (nr + 1) = 1)
   loop
     collections_pkg.add_array (io_array, j.nr + 1);
   end loop;
@@ -318,7 +318,7 @@ end traverse;
 --
 -- Check all possible combinations that can contribute to the totient. Needed to calculate the inverse.
 --
-procedure validate_totient (in_array in t_field_table, io_result_array in out t_field_table, in_product in integer, in_previous in integer, in_phi in integer)
+procedure validate_totient (in_depth in integer, in_array in t_field_table, io_result_array in out t_field_table, in_product in integer, in_phi in integer)
 is
 begin
   if maths.phi (in_product) = in_phi
@@ -326,12 +326,9 @@ begin
     collections_pkg.add_array (io_result_array, in_product, 0, 0);      
   elsif maths.phi (in_product) < in_phi
   then
-    for j in 1 .. in_array.count
+    for j in in_depth .. in_array.count
 	loop
-	  if in_array (j).field1 > in_previous
-	  then
-        validate_totient (in_array, io_result_array, in_product * in_array (j).field1, in_array (j).field1, in_phi);
-	  end if;
+      validate_totient (in_depth + 1, in_array, io_result_array, in_product * in_array (j).field1, in_phi);
     end loop;
   end if;
 
@@ -358,7 +355,7 @@ begin
   add_primes (l_piece, in_phi);
   traverse (l_divisor_array, l_piece, 1);
   l_piece   := collections_pkg.sort_unique (l_piece);
-  validate_totient (l_piece, l_return, 1, 0, in_phi);
+  validate_totient (1, l_piece, l_return, 1, in_phi);
   l_return   := collections_pkg.sort_unique (l_return);
   l_index    := l_return.first;
   while l_index is not null
